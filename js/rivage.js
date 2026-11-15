@@ -1,6 +1,6 @@
 // RIVAGE — survie en monde ouvert sur une île. Jeu original pour NOVA.
 import * as THREE from './three.module.min.js';
-import { Input, Sound, Store, Modal, ListMenu, clamp, lerp, damp, rng, el, fmtDuration, isTV, isTouch } from './core.js';
+import { Input, Sound, Store, Modal, ListMenu, clamp, lerp, damp, rng, el, fmtDuration, isTV, isTouch, lowEnd } from './core.js';
 import { World, ISLANDS, GEO, SIZE, HALF, G, CELL, smooth, WATER_VS, WATER_FS, SKY_VS, SKY_FS, patchTerrain, woodTexture, mergeC, mat } from './rivage-world.js';
 import { ITEMS, TOOLS, RECIPES, PIECES, ANIMALS, PRED_NAMES, ERAS, MODES, MODS, JOURNAL, CSS, STATION_NAMES, buildHuman, toolMesh, buildAnimal } from './rivage-data.js';
 
@@ -55,7 +55,7 @@ export class Rivage {
   begin(cfg, saved) {
     this.cfg = cfg; this.mods = cfg.mods || {}; this.isl = ISLANDS[cfg.island]; this.era = ERAS[cfg.era]; this.creative = cfg.mode === 'creative'; this.hard = cfg.mode === 'hard';
     this.root.style.setProperty('--acc', this.isl.acc);
-    this.quality = Store.settings.quality === 'auto' ? (isTV ? 'low' : isTouch ? 'medium' : 'high') : Store.settings.quality;
+    this.quality = Store.settings.quality === 'auto' ? ((isTV || lowEnd) ? 'low' : isTouch ? 'medium' : 'high') : Store.settings.quality;
     const W = this.world = new World(cfg), st = W.sites;
     this.S = saved || { day: 1, tod: 0.31, p: { x: st.spawn[0], z: st.spawn[1], y: 0, yaw: Math.atan2(st.spawn[0], st.spawn[1]), hp: 100, food: 78, water: 72, en: 100 }, inv: {}, tool: 'hands', removed: {}, digs: [], pieces: [], spawn: null, story: { step: 0, frags: [], flags: {}, maya: 'none', rel: 0, talk: 0, pages: [], gift: 0 }, weather: 'clear', wT: 150, collect: {}, stats: { kills: 0, dug: 0, built: 0, crafted: 0, deaths: 0 }, playTime: 0, ended: null, pid: 1 };
     const S = this.S;
@@ -85,13 +85,13 @@ export class Rivage {
     const q = this.quality, W = this.world, low = q === 'low';
     const r = this.renderer = new THREE.WebGLRenderer({ antialias: q === 'high', powerPreference: 'high-performance' });
     r.outputColorSpace = THREE.LinearSRGBColorSpace;
-    this.prTarget = q === 'high' ? Math.min(devicePixelRatio, 2) : q === 'medium' ? Math.min(devicePixelRatio, 1.4) : Math.min(devicePixelRatio, 0.8); this.pr = this.prTarget; r.setPixelRatio(this.pr);
+    this.prTarget = q === 'high' ? Math.min(devicePixelRatio, 2) : q === 'medium' ? Math.min(devicePixelRatio, 1.4) : (isTV ? 0.6 : Math.min(devicePixelRatio, 0.8)); this.pr = this.prTarget; r.setPixelRatio(this.pr);
     r.shadowMap.enabled = !low; r.shadowMap.type = THREE.PCFSoftShadowMap;
     r.domElement.className = 'game-canvas'; this.root.appendChild(r.domElement);
     r.domElement.addEventListener('click', () => { if (!this.ui && !Modal.active && !isTouch && Input.device !== 'touch' && document.pointerLockElement !== r.domElement) { try { const p = r.domElement.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) {} } });
     const sc = this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(68, 1, 0.15, 3000);
-    this.fogFar = low ? 330 : q === 'medium' ? 480 : 620;
+    this.fogFar = low ? (isTV ? 240 : 330) : q === 'medium' ? 480 : 620;
     sc.fog = new THREE.Fog(0x9ab, 40, this.fogFar);
     this.hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 1); sc.add(this.hemi);
     const sun = this.sun = new THREE.DirectionalLight(0xffffff, 1); sun.castShadow = !low;
@@ -153,7 +153,7 @@ export class Rivage {
       list.forEach((o, i) => { o.idx = i; o.hp = OBJ[type].hp || 1; o.alive = !(o.id in S.removed); this.setObj(im, o, m4, q, up); const k = this.gk(o.x, o.z); (this.grid.get(k) || this.grid.set(k, []).get(k)).push(o); });
       im.computeBoundingSphere(); im.frustumCulled = false; this.scene.add(im); this.inst[type] = im;
     }
-    const pts = W.grassPoints(low ? 2500 : this.quality === 'medium' ? 7000 : 14000);
+    const pts = W.grassPoints(low ? (isTV ? 900 : 2500) : this.quality === 'medium' ? 7000 : 14000);
     const gm = new THREE.InstancedMesh(GEO.grass(), new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), pts.length);
     const sv = new V3(), pv = new V3();
     pts.forEach((p, i) => { q.setFromAxisAngle(up, p[4]); m4.compose(pv.set(p[0], p[1] - 0.05, p[2]), q, sv.set(p[3], p[3], p[3])); gm.setMatrixAt(i, m4); });

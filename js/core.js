@@ -37,8 +37,31 @@ export function timeAgo(ts) {
   if (d < 86400) return `il y a ${Math.floor(d / 3600)} h`;
   return `il y a ${Math.floor(d / 86400)} j`;
 }
-export const isTV = /Android TV|AFT|BRAVIA|GoogleTV|Chromecast|CrKey|SmartTV|Tizen|Web0S/i.test(navigator.userAgent);
-export const isTouch = ('ontouchstart' in window || navigator.maxTouchPoints > 0) && !isTV;
+// Détection télé : ?tv=1 (mémorisé), user-agent TV, ou Android sans écran tactile ; ?tv=0 annule.
+const _tvForced = (() => {
+  try {
+    const q = new URLSearchParams(location.search).get('tv');
+    if (q === '1' || q === '0') localStorage.setItem('nova.tv', q);
+    return localStorage.getItem('nova.tv');
+  } catch (e) { return null; }
+})();
+const _ua = navigator.userAgent;
+const _uaTV = /Android TV|AndroidTV|\bTV\b|AFT|BRAVIA|GoogleTV|Google TV|Chromecast|CrKey|SmartTV|SMART-TV|Tizen|Web0S|WebOS|HbbTV|NetCast|Aquos|TV Bro/i.test(_ua);
+const _hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const _androidNoTouch = /Android/i.test(_ua) && !/Mobile/i.test(_ua) && !(navigator.maxTouchPoints > 0) && !matchMedia('(pointer: coarse)').matches;
+// GPU modeste (Chromecast, box TV, vieux téléphones) : qualité basse automatique
+export const lowEnd = (() => {
+  try {
+    const c = document.createElement('canvas'), gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+    if (!gl) return true;
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    const r = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
+    const lose = gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext();
+    return /Mali-(4|T|G3|G5[12])|PowerVR|VideoCore|Adreno \(TM\) [1-5]\d\d|SwiftShader|llvmpipe|Vivante|GC\d{3,4}/i.test(r) || (navigator.hardwareConcurrency || 8) <= 4 && /Android/i.test(_ua);
+  } catch (e) { return false; }
+})();
+export const isTV = _tvForced === '1' || (_tvForced !== '0' && (_uaTV || _androidNoTouch));
+export const isTouch = _hasTouch && !isTV;
 
 /* ------------------------------------------------------------------ */
 /* Sauvegardes : local (toujours) + cloud Claude (si dispo) + code     */
@@ -183,11 +206,20 @@ export const Input = {
   cur: {}, prev: {}, ax: { mx: 0, my: 0, lx: 0, ly: 0 },
   layout: null, _nav: { dir: null, t: 0 }, _ls: new Set(), _sprint: false,
   init() {
+    // télécommande TV : certains navigateurs n'envoient que e.key (ou des noms propres à Android)
+    const norm = e => {
+      const k = e.key, m = { ArrowUp: 'ArrowUp', ArrowDown: 'ArrowDown', ArrowLeft: 'ArrowLeft', ArrowRight: 'ArrowRight', Up: 'ArrowUp', Down: 'ArrowDown', Left: 'ArrowLeft', Right: 'ArrowRight', Enter: 'Enter', Accept: 'Enter', Select: 'Enter', ' ': 'Space', Escape: 'Escape', Esc: 'Escape', GoBack: 'Escape', BrowserBack: 'Escape', Backspace: 'Backspace', MediaPlayPause: 'KeyP', ContextMenu: 'KeyP' };
+      if (m[k] && (!e.code || e.code === 'Unidentified' || /^(GoBack|BrowserBack|MediaPlayPause|ContextMenu)$/.test(k))) return m[k];
+      if (!e.code && e.keyCode) { const kc = { 13: 'Enter', 23: 'Enter', 27: 'Escape', 4: 'Escape', 37: 'ArrowLeft', 38: 'ArrowUp', 39: 'ArrowRight', 40: 'ArrowDown', 32: 'Space', 8: 'Backspace' }[e.keyCode]; if (kc) return kc; }
+      return e.code || k;
+    };
     addEventListener('keydown', e => {
-      this.keys.add(e.code); this.tapped.add(e.code); this.setDevice('kb');
-      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.code) && !(e.target && /INPUT|TEXTAREA/.test(e.target.tagName))) e.preventDefault();
+      const code = norm(e); if (code === 'Escape' && /GoBack|BrowserBack/.test(e.key)) e.preventDefault();
+      Object.defineProperty(e, '_nc', { value: code });
+      this.keys.add(code); this.tapped.add(code); this.setDevice('kb');
+      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(code) && !(e.target && /INPUT|TEXTAREA/.test(e.target.tagName))) e.preventDefault();
     });
-    addEventListener('keyup', e => this.keys.delete(e.code));
+    addEventListener('keyup', e => this.keys.delete(norm(e)));
     addEventListener('blur', () => { this.keys.clear(); this.mbtn = 0; });
     addEventListener('mousemove', e => { if (this.locked || this.mbtn) { this.mdx += e.movementX || 0; this.mdy += e.movementY || 0; } });
     addEventListener('mousedown', e => { this.mbtn |= 1 << e.button; this.mtapped |= 1 << e.button; if (this.device !== 'gp') this.setDevice('kb'); });

@@ -1,5 +1,5 @@
 // NOVA — le hub (accueil façon console)
-import { Input, Sound, Store, Modal, ListMenu, el, fmtDuration, timeAgo, rng, isTV, isTouch } from './core.js';
+import { Input, Sound, Store, Modal, ListMenu, el, fmtDuration, timeAgo, rng, isTV, isTouch, lowEnd } from './core.js';
 
 /* ---------------- illustrations générées (SVG) ---------------- */
 function artSkyline(W = 1600, H = 900) {
@@ -163,7 +163,7 @@ export const Hub = {
     Input.on((t, v) => { this.paintStatus(); if (t === 'gamepad' && v) this.notify(`${Input.gpName} connectée`, 'Prêt à jouer'); if (t === 'device' && !this.game) this.paintHints(); });
     setInterval(() => this.paintClock(), 10000); this.paintClock(); this.paintStatus(); this.paintHints();
     this.initFx();
-    document.body.classList.toggle('tv', isTV); document.body.classList.toggle('is-touch', isTouch);
+    document.body.classList.toggle('tv', isTV); document.body.classList.toggle('lowend', lowEnd || isTV); document.body.classList.toggle('is-touch', isTouch);
     const splash = this.$('#splash');
     const go = () => {
       if (!splash.classList.contains('gone')) {
@@ -339,6 +339,7 @@ export const Hub = {
       { label: 'Vibrations de la manette', ...tg('rumble') },
       { label: 'Qualité graphique', sub: 'Auto = adaptée à l’appareil (télé, téléphone, PC)', get: () => qn[S.quality], left: () => { S.quality = qual[(qual.indexOf(S.quality) + 3) % 4]; Store.touch(); }, right: () => { S.quality = qual[(qual.indexOf(S.quality) + 1) % 4]; Store.touch(); } },
       { label: 'Afficher les FPS en jeu', ...tg('fps') },
+      { label: 'Mode télé', sub: 'Pour Chromecast et navigateurs TV : qualité basse, pas de boutons tactiles, effets allégés. Recharge la page.', get: () => isTV ? '<b class="eq">Activé</b>' : 'Désactivé', left: () => this.toggleTV(), right: () => this.toggleTV() },
       { label: 'Plein écran', act: () => { try { if (document.fullscreenElement) document.exitFullscreen(); else { const p = document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(() => this.notify('Plein écran indisponible', 'Ton navigateur le refuse ici')); } } catch (e) { this.notify('Plein écran indisponible', 'Ton navigateur le refuse ici'); } } },
       { label: 'Fermer', cls: 'exit', act: () => this.closePanel() },
     ];
@@ -348,6 +349,7 @@ export const Hub = {
     p.addEventListener('click', e => { if (e.target === p) this.closePanel(); });
     this.panel = { el: p, list: new ListMenu(p.querySelector('.gm-list'), items) };
   },
+  toggleTV() { try { localStorage.setItem('nova.tv', isTV ? '0' : '1'); } catch (e) {} location.reload(); },
   closePanel() { if (!this.panel) return; this.panel.el.remove(); this.panel = null; Sound.sfx('back'); },
   async launch(id) {
     if (this.game || this.launching) return;
@@ -387,6 +389,7 @@ export const Hub = {
   initFx() {
     const c = this.$('#fx'), x = c.getContext('2d');
     const pts = Array.from({ length: isTV ? 26 : 50 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.8 + 0.4, s: Math.random() * 0.02 + 0.006, a: Math.random() }));
+    if (isTV || lowEnd) { c.style.display = 'none'; return; }
     const draw = () => {
       if (!this.game) {
         const w = c.width = c.clientWidth, h = c.height = c.clientHeight;

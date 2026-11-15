@@ -1,6 +1,6 @@
 // CUBIKA — la place aux mini-jeux. Jeu original pour NOVA (hors ligne, contre des bots).
 import * as THREE from './three.module.min.js';
-import { Input, Sound, Store, Modal, ListMenu, clamp, lerp, damp, el, fmtDuration, isTV, isTouch } from './core.js';
+import { Input, Sound, Store, Modal, ListMenu, clamp, lerp, damp, el, fmtDuration, isTV, isTouch, lowEnd } from './core.js';
 import { World, Char, stepChar, OrbitCam, Bits, V3, textSprite, textPlane, skyTexture, boxMat, clearMatCache, defaultLook, randomLook, disposeAvatar, HATS, BACKS, FACES, DECALS, SKIN, COLORS, RUN } from './cubika-engine.js';
 import { Obby, Tower, Tycoon, Pets, HideSeek } from './cubika-games1.js';
 import { Disasters, Kart, Fashion, BedWars, Mystery } from './cubika-games2.js';
@@ -72,7 +72,7 @@ export class Cubika {
     if (!document.getElementById('ck-css')) { const s = el('style'); s.id = 'ck-css'; s.textContent = CSS; document.head.appendChild(s); }
     const sv = Store.getGame('cubika');
     this.S = Object.assign({ look: defaultLook(), coins: 60, xp: 0, level: 1, owned: { hat: ['none', 'cap'], back: ['none'], face: ['smile', 'happy'], decal: ['none', 'star'] }, stats: {}, playTime: 0, lastDay: '', tycoon: null, pets: null, created: false }, sv && sv.state ? sv.state : {});
-    this.quality = Store.settings.quality === 'auto' ? (isTV ? 'low' : isTouch ? 'medium' : 'high') : Store.settings.quality;
+    this.quality = Store.settings.quality === 'auto' ? ((isTV || lowEnd) ? 'low' : isTouch ? 'medium' : 'high') : Store.settings.quality;
     this.root.style.setProperty('--acc', '#ffd23d');
     this.initScene(); this.initHUD();
     if (isTouch || Input.device === 'touch') this.initTouch();

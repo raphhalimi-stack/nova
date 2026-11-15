@@ -1,6 +1,6 @@
 // SKYLINE — Haneul City : monde ouvert, grappin, missions. Jeu original pour NOVA.
 import * as THREE from './three.module.min.js';
-import { Input, Sound, Store, Modal, ListMenu, clamp, lerp, damp, rng, el, fmtClock, fmtDuration, isTV, isTouch } from './core.js';
+import { Input, Sound, Store, Modal, ListMenu, clamp, lerp, damp, rng, el, fmtClock, fmtDuration, isTV, isTouch, lowEnd } from './core.js';
 
 THREE.ColorManagement.enabled = false;
 
@@ -404,7 +404,7 @@ export class Skyline {
     this.time = 0; this.hitstop = 0; this.shake = 0; this.menu = null;
     this.drones = []; this.projectiles = []; this.act = null; this.chase = null; this.boss = null;
     this.dialogQ = []; this.dialogT = 0;
-    this.quality = Store.settings.quality === 'auto' ? (isTV ? 'low' : isTouch ? 'medium' : 'high') : Store.settings.quality;
+    this.quality = Store.settings.quality === 'auto' ? ((isTV || lowEnd) ? 'low' : isTouch ? 'medium' : 'high') : Store.settings.quality;
     this.initRenderer(); this.initWorld(); this.initPlayer(); this.initHUD();
     if (isTouch || Input.device === 'touch') this.initTouch();
     this.applySave();
@@ -474,13 +474,13 @@ export class Skyline {
     const q = this.quality;
     this.renderer = new THREE.WebGLRenderer({ antialias: q === 'high', powerPreference: 'high-performance' });
     this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-    this.prTarget = q === 'high' ? Math.min(devicePixelRatio, 2) : q === 'medium' ? Math.min(devicePixelRatio, 1.5) : Math.min(devicePixelRatio, 0.85);
+    this.prTarget = q === 'high' ? Math.min(devicePixelRatio, 2) : q === 'medium' ? Math.min(devicePixelRatio, 1.5) : (isTV ? 0.6 : Math.min(devicePixelRatio, 0.85));
     this.pr = this.prTarget; this.renderer.setPixelRatio(this.pr);
     this.root.appendChild(this.renderer.domElement);
     this.renderer.domElement.className = 'game-canvas';
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(70, 1, 0.3, 2200);
-    this.fogFar = q === 'low' ? 430 : q === 'medium' ? 620 : 820;
+    this.fogFar = q === 'low' ? (isTV ? 320 : 430) : q === 'medium' ? 620 : 820;
     this.scene.fog = new THREE.Fog(0x8899aa, 60, this.fogFar);
     this.hemi = new THREE.HemisphereLight(0x8899bb, 0x222018, 1); this.scene.add(this.hemi);
     this.sun = new THREE.DirectionalLight(0xffffff, 1); this.sun.position.set(1, 2, 1); this.scene.add(this.sun);
