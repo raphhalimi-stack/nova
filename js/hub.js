@@ -53,6 +53,12 @@ function artBlocks(W = 1600, H = 900) {
       s += `<path d="M${ox} ${y} l${S * 0.87} ${S * 0.5} l${-S * 0.87} ${S * 0.5} l${-S * 0.87} ${-S * 0.5}z" fill="${top}"/><path d="M${ox - S * 0.87} ${y + S * 0.5} l${S * 0.87} ${S * 0.5} v${S * 0.62} l${-S * 0.87} ${-S * 0.5}z" fill="${l}"/><path d="M${ox} ${y + S} l${S * 0.87} ${-S * 0.5} v${S * 0.62} l${-S * 0.87} ${S * 0.5}z" fill="${rr}"/>`;
     }
   }
+  // cristal lumineux, lanterne, glisseur et bâtisseur (silhouettes originales)
+  s += `<defs><filter id="bg"><feGaussianBlur stdDeviation="14"/></filter></defs>`;
+  s += `<circle cx="${W * 0.72}" cy="${H * 0.36}" r="70" fill="#6ff0ff" opacity=".45" filter="url(#bg)"/><path d="M${W * 0.72} ${H * 0.36 - 60} l34 50 -34 60 -34 -60z" fill="#9ff8ff"/><path d="M${W * 0.72} ${H * 0.36 - 60} l34 50 -34 10z" fill="#e6fdff"/>`;
+  s += `<circle cx="${W * 0.26}" cy="${H * 0.3}" r="60" fill="#ffd27a" opacity=".45" filter="url(#bg)"/><rect x="${W * 0.26 - 18}" y="${H * 0.3 - 22}" width="36" height="44" fill="#ffe2a0" stroke="#4a3a24" stroke-width="6"/>`;
+  s += `<g transform="translate(${W * 0.55} ${H * 0.22}) rotate(-8)"><rect x="-90" y="-10" width="180" height="20" rx="6" fill="#2b2f45"/><rect x="-80" y="10" width="160" height="6" fill="#5bd36a"/><rect x="-14" y="-62" width="28" height="52" fill="#1f2430"/><rect x="-12" y="-90" width="24" height="24" fill="#f2c79a"/><rect x="-30" y="-58" width="16" height="36" fill="#3d8bff"/><rect x="14" y="-58" width="16" height="36" fill="#3d8bff"/></g>`;
+  for (let i = 0; i < 7; i++) { const x = W * (0.1 + r() * 0.8), y = H * (0.08 + r() * 0.25), z = 18 + r() * 22; s += `<path d="M${x} ${y} l${z} ${z * 0.55} l${-z} ${z * 0.55} l${-z} ${-z * 0.55}z" fill="#5bd36a" opacity=".85"/><path d="M${x - z} ${y + z * 0.55} l${z} ${z * 0.55} v${z * 0.7} l${-z} ${-z * 0.55}z" fill="#3e9a4b" opacity=".85"/><path d="M${x} ${y + z * 1.1} l${z} ${-z * 0.55} v${z * 0.7} l${-z} ${z * 0.55}z" fill="#2f7a3a" opacity=".85"/>`; }
   s += `<rect width="${W}" height="${H}" fill="url(#f)"/></svg>`;
   return s;
 }
@@ -126,7 +132,12 @@ const toURI = svg => `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent
 
 /* ---------------- catalogue ---------------- */
 const GAMES = [
-  { id: 'cubika', title: 'CUBIKA', sub: 'La place aux mini-jeux', kicker: 'NOUVEAU · 10 MINI-JEUX', acc: '#ffd23d', art: artCubika, playable: true, mod: 'cubika', cls: 'Cubika',
+  { id: 'blockverse', title: 'BLOCKVERSE', sub: 'Bac à sable moddé', kicker: 'NOUVEAU · CONSTRUCTION', acc: '#5bd36a', art: artBlocks, playable: true, mod: 'blockverse', cls: 'Blockverse',
+    desc: 'Un monde de cubes à ta façon : casse, récolte, construis. Créatif ou Survie, quatre types de mondes, des nuits peuplées d’Ombrelins et 13 mods intégrés à activer en un clic : vol, glisseur, gravité lunaire, étoiles filantes…',
+    chips: ['Créatif & Survie', '13 mods intégrés', '18 défis', 'Fabrication', 'Jour & nuit'],
+    tips: ['Appuie deux fois sur saut pour voler en Créatif.', 'En Survie, un tronc donne quatre planches.', 'Les lanternes éclairent les grottes et les maisons.', 'Les Ombrelins disparaissent au lever du soleil.', 'Les cristaux se cachent sous la couche 16.', 'Chaque niveau débloque de nouveaux mods.', 'Le bloc rebond renvoie plus haut quand tu tombes de haut.', 'La dynamite s’allume avec △ (E au clavier).'],
+    controls: `<div class="ctrl-grid"><div><h4>Manette PS5</h4><ul><li><b>Joystick gauche</b> bouger · <b>L3</b> sprint</li><li><b>Joystick droit</b> regarder</li><li><b>✕</b> sauter · deux fois pour voler</li><li><b>R2</b> casser · <b>L2</b> poser</li><li><b>R1 / L1</b> changer de bloc</li><li><b>△</b> interagir · <b>▢</b> sac</li><li><b>○</b> descendre · <b>Pavé</b> mods · <b>Options</b> pause</li></ul></div><div><h4>Clavier & souris</h4><ul><li><b>ZQSD / WASD</b> bouger · <b>Maj</b> sprint</li><li><b>Souris</b> regarder (clique pour verrouiller)</li><li><b>Espace</b> sauter · deux fois pour voler</li><li><b>Clic G / F</b> casser · <b>Clic D</b> poser</li><li><b>Molette / 1-9</b> choisir un bloc</li><li><b>E</b> interagir · <b>I</b> sac · <b>M</b> mods</li></ul></div><div><h4>Tactile</h4><ul><li>Joystick à gauche, glisser à droite pour regarder</li><li>CASSER (maintenir) · POSER · △</li><li>Barre de blocs en haut, SAC et MODS à gauche</li></ul></div></div>` },
+  { id: 'cubika', title: 'CUBIKA', sub: 'La place aux mini-jeux', kicker: 'MINI-JEUX · 10 PORTAILS', acc: '#ffd23d', art: artCubika, playable: true, mod: 'cubika', cls: 'Cubika',
     desc: 'Crée ton avatar cubique, gagne des jetons et passe les portails de la place : parcours, tour infinie, usine, familiers, cache-cache, catastrophes, karts, défilé, guerre des lits et enquête. Hors ligne, contre des bots.',
     chips: ['10 mini-jeux', 'Avatar & garde-robe', 'Niveaux & jetons', 'Bots'],
     tips: ['Les drapeaux verts du parcours sont des points de contrôle.', 'Dans l’usine, pense à vider le coffre pour acheter la suite.', 'Accroupis-toi derrière un meuble pour rester caché.', 'Dans la Guerre des lits, maintiens L2 pour construire un pont.', 'Au défilé, les objets liés au thème rapportent le plus d’étoiles.', 'Au manoir, les innocents disent toujours la vérité.'],
@@ -138,8 +149,6 @@ const GAMES = [
   { id: 'skyline', title: 'SKYLINE', sub: 'Haneul City', kicker: 'MONDE OUVERT · ACTION', acc: '#35e8ff', art: artSkyline, playable: true, mod: 'skyline', cls: 'Skyline',
     desc: 'Balance-toi entre les gratte-ciel au grappin, grimpe les tours, libère les quartiers envahis par les drones d’AXIOM. Une ville entière, de jour comme de nuit.',
     chips: ['Grappin & zip', 'Combats aériens', 'Courses', 'Cycle jour/nuit'] },
-  { id: 'blockverse', title: 'BLOCKVERSE', sub: 'Bac à sable moddé', kicker: 'BIENTÔT · CONSTRUCTION', acc: '#5bd36a', art: artBlocks,
-    desc: 'Un monde de cubes à ta façon : pouvoirs, véhicules, créatures et mods intégrés à activer en un clic.', chips: ['Mods intégrés', 'Véhicules', 'Créatures'] },
   { id: 'empire', title: 'EMPIRE', sub: 'Tycoon monde ouvert', kicker: 'BIENTÔT · GESTION', acc: '#ffb32e', art: artEmpire,
     desc: 'Explore une carte 3D et bâtis ton empire : usines, boutiques, argent qui tombe et améliorations sans fin.', chips: ['Tycoon', 'Exploration', 'Améliorations'] },
   { id: 'royale', title: 'ZONE ROYALE', sub: 'Battle royale contre bots', kicker: 'BIENTÔT · SURVIE', acc: '#b34dff', art: artRoyale,
@@ -251,6 +260,7 @@ export const Hub = {
     const cards = this.$('.cards');
     this.cardData = [];
     if (t.playable && sm && sm.cards) this.cardData = sm.cards.map(c => ({ k: c[0], v: c[1], s: c[2], bar: c[3] }));
+    else if (t.id === 'blockverse') this.cardData = [{ k: 'Nouveau', v: 'Crée ton monde', s: 'Prairies, archipel, montagnes, plat' }, { k: '13 mods', v: 'Vol, glisseur, lune…', s: 'Débloqués en montant de niveau' }, { k: 'Astuce', v: 'Survie : casse un tronc', s: 'puis fabrique des planches' }];
     else if (t.id === 'cubika') this.cardData = [{ k: 'Nouveau', v: 'Crée ton avatar', s: 'Couleurs, chapeaux, accessoires' }, { k: '10 portails', v: 'Parcours, karts, enquête…', s: 'Joue contre des bots' }, { k: 'Astuce', v: '△ devant un portail', s: 'pour lancer un mini-jeu' }];
     else if (t.id === 'rivage') this.cardData = [{ k: 'Nouveau', v: 'Choisis ton île', s: 'Tropicale, volcanique ou nordique' }, { k: 'Astuce', v: 'Bois avant tout', s: 'Noix de coco, pluie ou source' }, { k: 'Astuce', v: 'Un feu avant la nuit', s: '3 bâtons, 3 pierres' }];
     else if (t.id === 'skyline') {

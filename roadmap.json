@@ -1,14 +1,65 @@
 {
-  "hub": "NOVA",
-  "faits": [
-    {"id": "skyline", "titre": "SKYLINE", "genre": "monde ouvert, grappin, action", "date": "2026-11-15"},
-    {"id": "rivage", "titre": "RIVAGE", "genre": "survie sur une île, construction, histoire à choix", "date": "2026-11-15", "fichiers": ["js/rivage.js", "js/rivage-world.js", "js/rivage-data.js"]},
-    {"id": "cubika", "titre": "CUBIKA", "genre": "plateforme de mini-jeux (avatar, place centrale, 10 mini-jeux contre bots)", "date": "2026-11-15", "remplace": "tuile RUSH",
-     "fichiers": ["js/cubika.js", "js/cubika-engine.js", "js/cubika-games1.js", "js/cubika-games2.js"],
-     "mini_jeux": {"obby": "Parcours céleste", "tower": "Tour sans fin", "tycoon": "Usine à jetons", "pets": "Ferme à familiers", "hide": "Cache-cache", "disaster": "Catastrophes", "kart": "Grand Prix Cubique", "fashion": "Défilé de mode", "beds": "Guerre des lits", "mystery": "Le Manoir Mystère"},
-     "mini_jeux_en_cours": []}
-  ],
-  "en_cours": null,
-  "file": ["BLOCKVERSE (bac à sable de cubes moddé)", "EMPIRE (tycoon monde ouvert)", "ZONE ROYALE (battle royale contre bots)", "idées suivantes : course arcade, combat, sport, horreur légère, stratégie, rythme"],
-  "notes": "hub.js : launch(id) est générique (champs mod et cls du catalogue GAMES ; summary.line et summary.cards affichés par le hub ; champ controls = HTML du bouton Commandes). core.js fournit des actions génériques : use, alt, act, inv, crouch, build, eat, drink, light, next, prev, journal, digit. CUBIKA : chaque mini-jeu est une classe { start(), update(dt), destroy(), help(), persist()? } qui utilise l'API du jeu hôte (G.world, G.ctlPlayer, G.makeBots, G.finish...). Sauvegarde Store 'cubika' : look, coins, xp, level, owned, stats par mini-jeu, tycoon, pets."
+ "hub": "NOVA",
+ "faits": [
+  {
+   "id": "blockverse",
+   "titre": "BLOCKVERSE",
+   "genre": "bac à sable de cubes moddé (Créatif/Survie, 4 types de mondes, 13 mods, 18 défis, fabrication, créatures, jour/nuit)",
+   "date": "2026-11-16",
+   "fichiers": [
+    "js/blockverse.js",
+    "js/blockverse-world.js"
+   ]
+  },
+  {
+   "id": "skyline",
+   "titre": "SKYLINE",
+   "genre": "monde ouvert, grappin, action",
+   "date": "2026-11-15"
+  },
+  {
+   "id": "rivage",
+   "titre": "RIVAGE",
+   "genre": "survie sur une île, construction, histoire à choix",
+   "date": "2026-11-15",
+   "fichiers": [
+    "js/rivage.js",
+    "js/rivage-world.js",
+    "js/rivage-data.js"
+   ]
+  },
+  {
+   "id": "cubika",
+   "titre": "CUBIKA",
+   "genre": "plateforme de mini-jeux (avatar, place centrale, 10 mini-jeux contre bots)",
+   "date": "2026-11-15",
+   "remplace": "tuile RUSH",
+   "fichiers": [
+    "js/cubika.js",
+    "js/cubika-engine.js",
+    "js/cubika-games1.js",
+    "js/cubika-games2.js"
+   ],
+   "mini_jeux": {
+    "obby": "Parcours céleste",
+    "tower": "Tour sans fin",
+    "tycoon": "Usine à jetons",
+    "pets": "Ferme à familiers",
+    "hide": "Cache-cache",
+    "disaster": "Catastrophes",
+    "kart": "Grand Prix Cubique",
+    "fashion": "Défilé de mode",
+    "beds": "Guerre des lits",
+    "mystery": "Le Manoir Mystère"
+   },
+   "mini_jeux_en_cours": []
+  }
+ ],
+ "en_cours": null,
+ "file": [
+  "EMPIRE (tycoon monde ouvert)",
+  "ZONE ROYALE (battle royale contre bots)",
+  "idées suivantes : course arcade, combat, sport, horreur légère, stratégie, rythme"
+ ],
+ "notes": "hub.js : launch(id) est générique (champs mod et cls du catalogue GAMES ; summary.line et summary.cards affichés par le hub ; champ controls = HTML du bouton Commandes). core.js fournit des actions génériques : use, alt, act, inv, crouch, build, eat, drink, light, next, prev, journal, digit. CUBIKA : chaque mini-jeu est une classe { start(), update(dt), destroy(), help(), persist()? } qui utilise l'API du jeu hôte (G.world, G.ctlPlayer, G.makeBots, G.finish...). Sauvegarde Store 'cubika' : look, coins, xp, level, owned, stats par mini-jeu, tycoon, pets. BLOCKVERSE : sauvegarde Store 'blockverse' = profil (xp, level, stats, done, mods, kinds, set) + worlds[] (3 max ; chaque monde = graine + type + mode + edits compressées 'idx.id' base 36, pos, inv, hot, time, day, size)."
 }
